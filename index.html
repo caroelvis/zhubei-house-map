@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>竹北待售＋預售地圖 · 3,000–4,500萬 · 主+附≥32坪</title>
+  <meta name="description" content="竹北市 160 筆待售物件（總價 3,000–4,500 萬、主建物＋附屬≥32 坪），依建案／社區分組的互動地圖；另疊加 2026 年預售建案（實價登錄／開價／推估）與坤德知之。" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <link rel="icon" href="data:," />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <div>
+          <h1>竹北待售＋預售地圖 · 3,000–4,500 萬 · 主+附 ≥ 32 坪</h1>
+          <p class="subtitle">待售：樂居物件 160 筆（已去重）· 預售：2026 開賣建案（實價登錄／開價）＋坤德知之（推估）· 點建案即可在樂居開啟</p>
+        </div>
+      </div>
+      <div class="topbar-meta">
+        <span id="count-pill" class="pill">—</span>
+        <span class="legend-chip"><i class="dot dot-green"></i>&lt; 4,000 萬</span>
+        <span class="legend-chip"><i class="dot dot-orange"></i>≥ 4,000 萬</span>
+        <span class="legend-chip"><i class="dot dot-mixed"></i>兩者皆有</span>
+        <span class="legend-chip"><i class="dot dot-pre"></i>預售·實登</span>
+        <span class="legend-chip"><i class="dot dot-pre-ask"></i>預售·開價／推估</span>
+        <span class="legend-chip"><i class="dot dot-star">★</i>坤德知之</span>
+      </div>
+    </header>
+
+    <div class="workspace">
+      <section class="map-pane" aria-label="地圖">
+        <div id="map" role="application" aria-label="竹北待售物件地圖"></div>
+      </section>
+
+      <aside class="side-pane">
+        <div class="controls">
+          <div class="layers" role="group" aria-label="圖層">
+            <label class="field-check"><input type="checkbox" id="show-resale" checked /> <span>顯示待售</span></label>
+            <label class="field-check layer-pre"><input type="checkbox" id="show-presale" checked /> <span>顯示預售</span></label>
+            <label class="field-check layer-x" title="樂居地圖標示為「新案」、但不在 2026 預售清單內的竹北建案（只有樂居頁標題的價格資訊）"><input type="checkbox" id="show-extra" /> <span>樂居其他新案</span></label>
+          </div>
+          <div class="row2">
+            <label class="field">
+              <span>排序</span>
+              <select id="sort-by">
+                <option value="price-asc" selected>總價 · 低→高</option>
+                <option value="price-desc">總價 · 高→低</option>
+                <option value="ma-desc">主+附 · 大→小</option>
+                <option value="ma-asc">主+附 · 小→大</option>
+                <option value="age-asc">屋齡 · 新→舊</option>
+                <option value="age-desc">屋齡 · 舊→新</option>
+                <option value="ppm-asc">單坪價(主+附) · 低→高</option>
+                <option value="ppm-desc">單坪價(主+附) · 高→低</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>檢視</span>
+              <select id="view-mode">
+                <option value="community" selected>依建案／社區</option>
+                <option value="unit">依物件</option>
+              </select>
+            </label>
+          </div>
+          <div class="row2">
+            <label class="field">
+              <span>區域</span>
+              <select id="area-filter"><option value="all">全部區域</option></select>
+            </label>
+            <label class="field">
+              <span>型態</span>
+              <select id="type-filter"><option value="all">全部型態</option></select>
+            </label>
+          </div>
+          <div class="field field-range">
+            <span>總價 <output id="price-out">3,000–4,500</output> 萬</span>
+            <div class="dual">
+              <input type="range" id="price-min" min="3000" max="4500" step="10" value="3000" aria-label="總價下限" />
+              <input type="range" id="price-max" min="3000" max="4500" step="10" value="4500" aria-label="總價上限" />
+            </div>
+            <small id="pre-note" class="pre-note"></small>
+          </div>
+          <div class="row2">
+            <label class="field field-range">
+              <span>主+附 ≥ <output id="ma-out">32</output> 坪</span>
+              <input type="range" id="ma-min" min="32" max="60" step="0.5" value="32" />
+            </label>
+            <label class="field field-range">
+              <span>屋齡 ≤ <output id="age-out">不限</output></span>
+              <input type="range" id="age-max" min="0" max="46" step="1" value="46" />
+            </label>
+          </div>
+          <label class="field">
+            <span>關鍵字（社區／路段／標題）</span>
+            <input type="search" id="q" placeholder="例如：豐邑、文興路" />
+          </label>
+          <div class="checks">
+            <label class="field-check"><input type="checkbox" id="under4000" /> <span>只看 4,000 萬以下（非豪宅限貸）</span></label>
+            <label class="field-check"><input type="checkbox" id="se-only" /> <span>只看莊敬南路以東、光明六路以南</span></label>
+            <label class="field-check"><input type="checkbox" id="hide-flag" /> <span>隱藏辦公室／疑似非住宅／資料存疑</span></label>
+            <label class="field-check"><input type="checkbox" id="show-lines" checked /> <span>顯示莊敬南路／光明六路界線</span></label>
+          </div>
+          <button type="button" id="reset" class="btn-reset">重設篩選</button>
+        </div>
+
+        <div id="list" class="list" aria-live="polite"></div>
+
+        <footer class="side-foot">
+          <p>資料：樂居 leju.com.tw 2026-10-04/05 掃描（160 筆已去重；總價 3,000–4,500 萬、主+附 ≥ 32 坪）。座標取自樂居詳情頁內嵌座標並與 591 交叉比對，少數錯置者（如賦格律、鴻奕世紀享）已以 591 社區座標校正；標記為同社區各戶平均位置。</p>
+          <p>室內坪數 = 主建物 + 附屬建物，依仲介刊登填寫之數字，可能有誤；「單坪價」= 總價 ÷ 主+附（含車位價）。購買前請以建物謄本核實。</p>
+          <p class="foot-pre"><b>預售資料：</b>內政部實價登錄預售屋開放資料（111S3–115S3 及 2026-10-01 本期；交易日最晚 2026-08-20），單價 =（總價 − 車位價）÷（權狀 − 車位面積），萬/坪（權狀、不含車位），已排除解約與親友／特殊交易；總價含車位。尚無實登者顯示 591／樂居「開價」。坤德知之之單價、總價、車位價皆為<b>推估</b>（使用者提供之戶型面積與估價），非實際成交。預售資料未提供主建物，「主+附估算上限」= 權狀 × (1 − 公設比)。樂居連結與座標於 2026-10-06 逐一驗證；樂居查無頁面者改連 591 並標示。新竹縣總價 ≥ 4,000 萬屬高價住宅：貸款成數上限 3 成、無寬限期。</p>
+          <p>界線為 OSM 道路中心線（虛線），末端外為延伸線（點線），與先前判定「莊敬南路以東、光明六路以南」所用相同。</p>
+        </footer>
+      </aside>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
