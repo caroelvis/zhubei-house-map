@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>坤山建設 · 竹北建案地圖</title>
+  <meta name="description" content="坤山建設在竹北市的 20 個住宅建案：完工年、權狀／室內坪、最近一筆實價登錄與目前在售物件。" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <link rel="icon" href="data:," />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <div>
+          <h1>坤山建設 · 竹北建案地圖</h1>
+          <p class="subtitle"><span id="count-pill">—</span><span class="hint-d"> · 點標籤看實價登錄與在售物件</span></p>
+        </div>
+      </div>
+      <div class="legend" aria-label="圖例">
+        <span class="legend-chip"><i class="dot e1"></i>2010 前</span>
+        <span class="legend-chip"><i class="dot e2"></i>2010–2017</span>
+        <span class="legend-chip"><i class="dot e3"></i>2018 後</span>
+        <span class="legend-chip"><i class="dot pre"></i>預售</span>
+        <span class="legend-chip"><i class="sale-chip">售2</i>在售戶數</span>
+        <span class="legend-chip"><i class="star">★</i>坤德知之</span>
+      </div>
+    </header>
+
+    <div class="workspace">
+      <section class="map-pane" aria-label="地圖">
+        <div id="map" role="application" aria-label="坤山建案地圖"></div>
+      </section>
+
+      <aside class="side-pane" id="sheet">
+        <button type="button" class="sheet-handle" id="sheet-handle" aria-label="展開／收合清單"><span></span><b id="sheet-title">建案清單</b></button>
+        <div class="tabs" role="tablist">
+          <button type="button" role="tab" class="tab active" data-view="projects">建案 <small id="n-proj"></small></button>
+          <button type="button" role="tab" class="tab" data-view="listings">在售物件 <small id="n-list"></small></button>
+        </div>
+        <div class="controls" id="controls-projects">
+          <div class="row2">
+            <label class="field"><span>排序</span>
+              <select id="sort-by">
+                <option value="year" selected>完工年 · 舊→新</option>
+                <option value="year-desc">完工年 · 新→舊</option>
+                <option value="unit-asc">單價 · 低→高</option>
+                <option value="unit-desc">單價 · 高→低</option>
+                <option value="sale">有待售優先</option>
+              </select>
+            </label>
+            <label class="field"><span>區域</span>
+              <select id="zone-filter"><option value="all">全部區域</option></select>
+            </label>
+          </div>
+          <div class="checks">
+            <label class="field-check"><input type="checkbox" id="f-sale" /> <span>只看有待售</span></label>
+            <label class="field-check"><input type="checkbox" id="f-4000" /> <span>只看 4,000 萬以下待售</span></label>
+            <label class="field-check"><input type="checkbox" id="f-32" /> <span>室內 ≥ 32 坪</span></label>
+          </div>
+        </div>
+        <div class="controls" id="controls-listings" hidden>
+          <div class="row2">
+            <label class="field"><span>排序</span>
+              <select id="lsort">
+                <option value="price-asc" selected>總價 · 低→高</option>
+                <option value="price-desc">總價 · 高→低</option>
+                <option value="inner-desc">室內 · 大→小</option>
+                <option value="ppi-asc">每室內坪 · 低→高</option>
+              </select>
+            </label>
+            <label class="field-check fit-only"><input type="checkbox" id="f-fit" /> <span>只看 ≤4,000萬 且室內 ≥32</span></label>
+          </div>
+          <p class="hint"><i class="fit-swatch"></i>綠底＝總價 ≤ 4,000 萬且室內 ≥ 32 坪</p>
+        </div>
+        <div class="scroll">
+          <div id="list" class="list" aria-live="polite"></div>
+          <footer class="side-foot" id="foot"></footer>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
