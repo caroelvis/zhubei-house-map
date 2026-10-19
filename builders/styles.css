@@ -3,7 +3,7 @@
   --muted: #8a949c; --line: #e4ddd2; --accent: #2f5d50; --accent-soft: #e8f1ee; --accent-deep: #1e3f36;
   --leju: #e4007f; --o591: #ff6a00; --sinyi: #c8a400; --warn: #b42318;
   --e1: #6b7280; --e2: #2563eb; --e3: #0f9d58; --pre: #7c3aed; --star: #d97706; --fit: #e7f6ec; --fit-ink: #146c3a;
-  --bks: #8a5a12; --bdx: #b91c1c; --byl: #0f766e; --bhy: #1d4ed8; --bfy: #7c3aed; --e0: #9ca3af;
+  --bks: #8a5a12; --bdx: #b91c1c; --byl: #0f766e; --bhy: #1d4ed8; --bfy: #7c3aed; --bdy: #111827; --bhs: #c2410c; --e0: #9ca3af;
   --shadow: 0 10px 40px rgba(28,36,41,.08); --radius: 12px;
   --font: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", "Heiti TC", sans-serif;
 }
@@ -143,7 +143,7 @@ ul.notes { margin: 0; padding-left: 1.1em; font-size: .72rem; color: var(--ink-s
   .subtitle { font-size: .7rem; }
   .workspace { display: block; position: relative; height: 100%; }
   .map-pane { position: absolute; inset: 0; }
-  .side-pane { position: fixed; left: 0; right: 0; bottom: 0; z-index: 1000; height: 82dvh; border-left: 0; border-radius: 16px 16px 0 0;
+  .side-pane { position: fixed; left: 0; right: 0; bottom: 0; z-index: 1000; height: var(--sheet-h, 82dvh); border-left: 0; border-radius: 16px 16px 0 0;
     box-shadow: 0 -6px 24px rgba(0,0,0,.18); transform: translateY(calc(100% - var(--peek, 34dvh))); transition: transform .25s ease; }
   .side-pane.expanded { transform: translateY(0); }
   .side-pane.collapsed { transform: translateY(calc(100% - 52px)); }
@@ -157,7 +157,7 @@ ul.notes { margin: 0; padding-left: 1.1em; font-size: .72rem; color: var(--ink-s
 }
 
 /* ---- builders ---- */
-.btabs { display: grid; grid-template-columns: repeat(6, 1fr); gap: .3rem; width: 100%; order: 3; }
+.btabs { display: grid; grid-template-columns: repeat(8, 1fr); gap: .3rem; width: 100%; order: 3; }
 .btab { font: inherit; font-size: .84rem; font-weight: 700; padding: .42rem .2rem; border: 1px solid var(--line); border-radius: 10px; background: #fff; color: var(--ink-soft); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: .25rem; }
 .btab small { font-weight: 500; color: var(--muted); }
 .btab.active { background: var(--accent-deep); color: #fff; border-color: var(--accent-deep); }
@@ -181,7 +181,9 @@ ul.notes { margin: 0; padding-left: 1.1em; font-size: .72rem; color: var(--ink-s
 @media (max-width: 760px) {
   .btab { font-size: .76rem; padding: .36rem .1rem; }
   .btab .bmini { display: none; }
-  .btabs { grid-template-columns: repeat(3, 1fr); }
+  .btabs { grid-template-columns: repeat(4, 1fr); gap: .25rem; }
+  .btab { white-space: nowrap; min-width: 0; }
+  .btab small { font-size: .66rem; }
   .legend .legend-chip:last-child { display: none; }
 }
 
@@ -194,3 +196,13 @@ ul.notes { margin: 0; padding-left: 1.1em; font-size: .72rem; color: var(--ink-s
 .ptag.b-fy { --bc: var(--bfy); border-style: double !important; border-width: 3px !important; border-color: var(--bfy) !important; }
 .pdot.b-hy { border-color: var(--bhy); border-radius: 2px 10px 2px 10px; border-width: 3px; }
 .pdot.b-fy { border-color: var(--bfy); border-radius: 4px; border-style: double; border-width: 4px; }
+
+/* 大硯: black, dashed outline + square; 合石: orange, pill-ish with dotted border */
+.bmini.b-dy { background: var(--bdy); border-radius: 0; outline: 1.5px dashed var(--bdy); outline-offset: 1px; }
+.bmini.b-hs { background: var(--bhs); border-radius: 50% 50% 4px 4px; }
+.tag-b.b-dy { background: var(--bdy); border-radius: 0; } .tag-b.b-hs { background: var(--bhs); border-radius: 9px 9px 3px 3px; }
+.ptag.b-dy { --bc: var(--bdy); border-radius: 0; outline: 2px dashed var(--bdy); outline-offset: 1px; }
+.ptag.b-dy .pb, .ptag.b-dy .py { border-radius: 0 !important; }
+.ptag.b-hs { --bc: var(--bhs); border-radius: 12px 12px 3px 3px; border-style: dotted !important; border-width: 2px !important; border-color: var(--bhs) !important; }
+.pdot.b-dy { border-color: var(--bdy); border-radius: 0; border-style: dashed; border-width: 3px; }
+.pdot.b-hs { border-color: var(--bhs); border-radius: 50% 50% 3px 3px; border-style: dotted; border-width: 3px; }

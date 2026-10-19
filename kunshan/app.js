@@ -5,7 +5,7 @@
   var byId = {}; P.forEach(function (p) { byId[p.id] = p; });
   var LbyId = {}; L.forEach(function (l) { LbyId[l.id] = l; });
   var ERA = { e1: '2010 前完工', e2: '2010–2017 完工', e3: '2018 後完工', pre: '預售', e0: '完工年未知' };
-  var BN = D.builders, BCH = { ks: '坤', dx: '德', yl: '椰', hy: '惠', fy: '富' };
+  var BN = D.builders, BCH = { ks: '坤', dx: '德', yl: '椰', hy: '惠', fy: '富', dy: '硯', hs: '合' };
   var bsel = 'all';
   function bOk(b) { return bsel === 'all' || b === bsel; }
   var sheet = document.getElementById('sheet');
@@ -16,7 +16,7 @@
   function wan(n) { return n == null ? '—' : fmt(n, 0) + '萬'; }
   function listingsOf(p) { return p.listings.map(function (id) { return LbyId[id]; }); }
   function innerOf(l) { return l.inner != null ? fmt(l.inner) + '坪' : (l.main != null ? '主建物' + fmt(l.main) + '坪' : '未知'); }
-  function shortName(p) { return p.name.replace(/（.*?）/g, '').replace(/^(坤山|德鑫|椰林|椰寶|惠宇|富宇)/, '') || p.name; }
+  function shortName(p) { return p.name.replace(/（.*?）/g, '').replace(/^(坤山|德鑫|椰林|椰寶|惠宇|富宇|大硯|合石)/, '') || p.name; }
   function yearText(p) { return p.era === 'pre' ? '預售' : (p.year ? String(p.year) : '?'); }
 
   // ---------- map ----------
@@ -101,7 +101,7 @@
       });
       h += '</ul></div>';
     } else {
-      h += '<div class="sec"><h4>目前在售</h4><div style="font-size:.74rem;color:var(--ink-soft)">' + (p.builder === 'ks' || p.builder === 'fy' || p.builder === 'hy' ? '591／信義未見刊登' : '591 未見刊登') + '</div></div>';
+      h += '<div class="sec"><h4>目前在售</h4><div style="font-size:.74rem;color:var(--ink-soft)">' + (p.builder === 'ks' || p.builder === 'fy' ? '591／信義未見刊登' : '591 未見刊登') + '</div></div>';
     }
     if (p.notes.length) {
       h += '<div class="sec"><h4>注意事項</h4><ul class="notes">' + p.notes.map(function (n) { return '<li>' + esc(n) + '</li>'; }).join('') + '</ul></div>';
@@ -194,7 +194,7 @@
     P.forEach(function (p) { var on = vis.indexOf(p) >= 0, mk = markers[p.id]; if (on && !map.hasLayer(mk)) mk.addTo(map); if (!on && map.hasLayer(mk)) map.removeLayer(mk); });
     refreshIcons();
     var PB = P.filter(function (p) { return bOk(p.builder); }), LB = L.filter(function (l) { return bOk(l.builder); });
-    $('count-pill').textContent = (bsel === 'all' ? '五家建商' : BN[bsel]) + ' ' + PB.length + ' 案（顯示 ' + vis.length + '）· 在售 ' + LB.length + ' 戶 · 符合 ' + LB.filter(function (l) { return l.fit; }).length;
+    $('count-pill').textContent = (bsel === 'all' ? '八家建商' : BN[bsel]) + ' ' + PB.length + ' 案（顯示 ' + vis.length + '）· 在售 ' + LB.length + ' 戶 · 符合 ' + LB.filter(function (l) { return l.fit; }).length;
     $('n-proj').textContent = vis.length + '/' + PB.length;
     $('n-list').textContent = LB.length;
     if (view === 'projects') renderProjects(sorted(vis)); else renderListings();
@@ -274,7 +274,14 @@
   });
 
   // ---------- bottom sheet (mobile) ----------
+  function fitSheet() {
+    var t = document.querySelector('.btabs'); if (!t || !mobile()) { sheet.style.removeProperty('--sheet-h'); return; }
+    var h = Math.round(Math.min(window.innerHeight * 0.82, window.innerHeight - t.getBoundingClientRect().bottom - 6));
+    sheet.style.setProperty('--sheet-h', h + 'px');
+  }
+  window.addEventListener('resize', fitSheet);
   function setSheet(state) {
+    fitSheet();
     sheet.classList.remove('expanded', 'collapsed');
     if (state !== 'peek') sheet.classList.add(state);
     sheet.dataset.state = state;
@@ -283,7 +290,7 @@
     if (!mobile()) return 0;
     var st = sheet.dataset.state || 'peek';
     if (st === 'collapsed') return 52;
-    if (st === 'expanded') return window.innerHeight * 0.82;
+    if (st === 'expanded') return sheet.getBoundingClientRect().height;
     return window.innerHeight * 0.34;
   }
   setSheet('peek');
@@ -305,7 +312,7 @@
 
   // ---------- footer ----------
   $('foot').innerHTML =
-    '<p><b>資料來源：</b>建商官網業績（<a href="https://www.kuensun.com.tw/works" target="_blank" rel="noopener">坤山</a>、<a href="https://www.dexinhouse.com.tw/classic/all/" target="_blank" rel="noopener">德鑫</a>、<a href="https://www.grandconstruction.com.tw/program.php" target="_blank" rel="noopener">椰林</a>、<a href="https://www.huyuu.com.tw/" target="_blank" rel="noopener">惠宇</a>）；富宇以 JR 預售屋資訊站竹北富宇整理、新屋網富宇建設案件表、591 社區名比對（富宇官網只列近年個案）；JR 預售屋資訊站椰林各區整理；' + esc(D.meta.lvr) + '；591（社區頁與售屋）；信義社區頁（坤山在售、建商核對）。樂居被 Cloudflare 擋住，德鑫／椰林的在售只收 591，信義、永慶獨家委託可能漏列。查詢日 ' + esc(D.meta.generated) + '。</p>' +
+    '<p><b>資料來源：</b>建商官網業績（<a href="https://www.kuensun.com.tw/works" target="_blank" rel="noopener">坤山</a>、<a href="https://www.dexinhouse.com.tw/classic/all/" target="_blank" rel="noopener">德鑫</a>、<a href="https://www.grandconstruction.com.tw/program.php" target="_blank" rel="noopener">椰林</a>、<a href="https://www.huyuu.com.tw/" target="_blank" rel="noopener">惠宇</a>）；大硯、合石以媒體專訪（科技生活、米築、亞太新聞網、新竹縣府新聞）、預售屋備查與 591 社區名比對；富宇以 JR 預售屋資訊站竹北富宇整理、新屋網富宇建設案件表、591 社區名比對（富宇官網只列近年個案）；JR 預售屋資訊站椰林各區整理；' + esc(D.meta.lvr) + '；591（社區頁與售屋）；信義社區頁（坤山在售、建商核對）。樂居被 Cloudflare 擋住，德鑫／椰林的在售只收 591，信義、永慶獨家委託可能漏列。查詢日 ' + esc(D.meta.generated) + '。</p>' +
     '<p><b>單價：</b>' + esc(D.meta.formula) + '</p>' +
     '<p><b>室內坪：</b>' + esc(D.meta.innerDef) + '</p>' +
     '<p><b>座標：</b>採 591／信義社區頁內嵌座標（少數無社區頁者用 591 門牌點），全部以 OpenStreetMap 反查確認位於竹北市。</p>' +
