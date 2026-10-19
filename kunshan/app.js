@@ -4,7 +4,10 @@
   var P = D.projects, L = D.listings;
   var byId = {}; P.forEach(function (p) { byId[p.id] = p; });
   var LbyId = {}; L.forEach(function (l) { LbyId[l.id] = l; });
-  var ERA = { e1: '2010 前完工', e2: '2010–2017 完工', e3: '2018 後完工', pre: '預售' };
+  var ERA = { e1: '2010 前完工', e2: '2010–2017 完工', e3: '2018 後完工', pre: '預售', e0: '完工年未知' };
+  var BN = D.builders, BCH = { ks: '坤', dx: '德', yl: '椰' };
+  var bsel = 'all';
+  function bOk(b) { return bsel === 'all' || b === bsel; }
   var sheet = document.getElementById('sheet');
   var mobile = function () { return window.matchMedia('(max-width: 760px)').matches; };
 
@@ -13,8 +16,8 @@
   function wan(n) { return n == null ? '—' : fmt(n, 0) + '萬'; }
   function listingsOf(p) { return p.listings.map(function (id) { return LbyId[id]; }); }
   function innerOf(l) { return l.inner != null ? fmt(l.inner) + '坪' : (l.main != null ? '主建物' + fmt(l.main) + '坪' : '未知'); }
-  function shortName(p) { return p.name.replace(/^坤山/, '') || p.name; }
-  function yearText(p) { return p.era === 'pre' ? '預售' : String(p.year); }
+  function shortName(p) { return p.name.replace(/（.*?）/g, '').replace(/^(坤山|德鑫|椰林|椰寶)/, '') || p.name; }
+  function yearText(p) { return p.era === 'pre' ? '預售' : (p.year ? String(p.year) : '?'); }
 
   // ---------- map ----------
   var map = L_init();
@@ -33,17 +36,17 @@
     var z = map.getZoom();
     var sale = p.listings.length ? '<span class="ps">售' + p.listings.length + '</span>' : '';
     if (compact[p.id] && p.id !== activeId) {
-      return '<div class="pdot ' + p.era + (p.star ? ' starred' : '') + '" title="' + esc(p.name) + '">' + (p.star ? '★' : (p.listings.length ? p.listings.length : '')) + '</div>';
+      return '<div class="pdot b-' + p.builder + ' ' + p.era + (p.star ? ' starred' : '') + '" title="' + esc(p.name) + '">' + (p.star ? '★' : (p.listings.length ? p.listings.length : '')) + '</div>';
     }
     var unit = '';
     if (z >= 16 && p.unitLabel) unit = '<span class="pu">' + esc(p.unitLabel) + (p.unitEst ? '萬(估)' : '萬') + '</span>';
     var star = p.star ? '<span class="pstar">★</span>' : '';
-    return '<div class="ptag ' + p.era + (p.star ? ' starred' : '') + (p.id === activeId ? ' active' : '') + '">' +
-      '<span class="pn">' + star + esc(labelText(p)) + '</span>' + unit + '<span class="py">' + yearText(p) + '</span>' + sale + '</div>';
+    return '<div class="ptag b-' + p.builder + ' ' + p.era + (p.star ? ' starred' : '') + (p.id === activeId ? ' active' : '') + '">' +
+      '<span class="pb">' + BCH[p.builder] + '</span><span class="pn">' + star + esc(labelText(p)) + '</span>' + unit + '<span class="py">' + yearText(p) + '</span>' + sale + '</div>';
   }
   function makeIcon(p) { return window.L.divIcon({ className: 'tag-icon', html: iconHtml(p), iconSize: [0, 0], iconAnchor: [0, 0], popupAnchor: [0, -34] }); }
   function labelBox(p, pt) {
-    var z = map.getZoom(), w = labelText(p).length * 12.5 + 46 + (z >= 16 && p.unitLabel ? 50 : 0) + (p.star ? 14 : 0);
+    var z = map.getZoom(), w = labelText(p).length * 12.5 + 64 + (z >= 16 && p.unitLabel ? 50 : 0) + (p.star ? 14 : 0);
     return { x1: pt.x - w / 2 - 4, x2: pt.x + w / 2 + 10, y1: pt.y - 40, y2: pt.y + 2 };
   }
   function declutter() {
@@ -63,7 +66,7 @@
     var h = '<div class="pop">';
     h += '<div class="pop-title">' + (p.star ? '<span class="star">★</span>' : '') + esc(p.name) + '</div>';
     if (p.alias) h += '<div class="pop-alias">又名：' + esc(p.alias) + '</div>';
-    h += '<div class="pop-sub"><span class="tag tag-zone">' + esc(p.zone) + '</span><span class="tag">' + esc(ERA[p.era]) + '</span>' +
+    h += '<div class="pop-sub"><span class="tag tag-b b-' + p.builder + '">' + esc(BN[p.builder]) + '</span><span class="tag tag-zone">' + esc(p.zone) + '</span><span class="tag">' + esc(ERA[p.era]) + '</span>' +
       (p.listings.length ? '<span class="tag tag-sale">在售 ' + p.listings.length + ' 戶</span>' : '') + '</div>';
     h += '<div class="pop-scroll">';
     h += '<div class="sec"><h4>基本資料</h4><dl class="kv">' +
@@ -94,11 +97,11 @@
       ls.forEach(function (l) {
         h += '<li><a href="' + esc(l.url) + '" target="_blank" rel="noopener" class="' + (l.fit ? 'fit' : '') + '">' +
           '<span class="f">' + esc(l.floor) + '</span><span class="t">' + wan(l.total) + '</span>' +
-          '<span class="a">權狀 ' + fmt(l.own) + ' · 室內 ' + innerOf(l) + ' · ' + esc(l.src) + ' ↗</span></a></li>';
+          '<span class="a">權狀 ' + fmt(l.own) + ' · 室內 ' + innerOf(l) + ' · ' + esc(l.src) + (l.priceHist ? ' · 曾見 ' + esc(l.priceHist) : '') + ' ↗</span></a></li>';
       });
       h += '</ul></div>';
     } else {
-      h += '<div class="sec"><h4>目前在售</h4><div style="font-size:.74rem;color:var(--ink-soft)">591／信義未見刊登</div></div>';
+      h += '<div class="sec"><h4>目前在售</h4><div style="font-size:.74rem;color:var(--ink-soft)">' + (p.builder === 'ks' ? '591／信義未見刊登' : '591 未見刊登') + '</div></div>';
     }
     if (p.notes.length) {
       h += '<div class="sec"><h4>注意事項</h4><ul class="notes">' + p.notes.map(function (n) { return '<li>' + esc(n) + '</li>'; }).join('') + '</ul></div>';
@@ -160,11 +163,12 @@
 
   // ---------- filters ----------
   var $ = function (id) { return document.getElementById(id); };
-  var zones = []; P.forEach(function (p) { if (zones.indexOf(p.zone) < 0) zones.push(p.zone); });
+  var zones = []; P.slice().sort(function (a, b) { return a.zone > b.zone ? 1 : -1; }).forEach(function (p) { if (zones.indexOf(p.zone) < 0) zones.push(p.zone); });
   zones.forEach(function (z) { var o = document.createElement('option'); o.value = z; o.textContent = z; $('zone-filter').appendChild(o); });
   function innerOk(l) { return l.inner != null ? l.inner >= 32 : (l.main != null && l.main >= 31.5); }
   function passes(p) {
     var z = $('zone-filter').value, ls = listingsOf(p);
+    if (!bOk(p.builder)) return false;
     if (z !== 'all' && p.zone !== z) return false;
     if ($('f-sale').checked && !ls.length) return false;
     var u4 = $('f-4000').checked, i32 = $('f-32').checked;
@@ -189,9 +193,10 @@
     var vis = P.filter(passes);
     P.forEach(function (p) { var on = vis.indexOf(p) >= 0, mk = markers[p.id]; if (on && !map.hasLayer(mk)) mk.addTo(map); if (!on && map.hasLayer(mk)) map.removeLayer(mk); });
     refreshIcons();
-    $('count-pill').textContent = '竹北 ' + P.length + ' 個建案（顯示 ' + vis.length + '）· 在售 ' + L.length + ' 戶';
-    $('n-proj').textContent = vis.length + '/' + P.length;
-    $('n-list').textContent = L.length;
+    var PB = P.filter(function (p) { return bOk(p.builder); }), LB = L.filter(function (l) { return bOk(l.builder); });
+    $('count-pill').textContent = (bsel === 'all' ? '三家建商' : BN[bsel]) + ' ' + PB.length + ' 案（顯示 ' + vis.length + '）· 在售 ' + LB.length + ' 戶 · 符合 ' + LB.filter(function (l) { return l.fit; }).length;
+    $('n-proj').textContent = vis.length + '/' + PB.length;
+    $('n-list').textContent = LB.length;
     if (view === 'projects') renderProjects(sorted(vis)); else renderListings();
   }
   function renderProjects(arr) {
@@ -201,9 +206,9 @@
       var ls = listingsOf(p), fit = ls.filter(function (l) { return l.fit; }).length;
       var t = p.latest;
       return '<div class="card ' + p.era + (p.star ? ' star-card' : '') + (p.id === activeId ? ' active' : '') + '" data-id="' + p.id + '" tabindex="0">' +
-        '<div class="card-head"><p class="cname">' + (p.star ? '<span class="star">★</span>' : '') + esc(p.name) + '<span class="cyear">' + esc(p.era === 'pre' ? '預售 ' + (p.year || '') : p.year) + '</span></p>' +
+        '<div class="card-head"><p class="cname">' + (p.star ? '<span class="star">★</span>' : '') + esc(p.name) + '<span class="cyear">' + esc(p.era === 'pre' ? '預售 ' + (p.year || '') : (p.year || '年份未知')) + '</span></p>' +
         '<span class="cunit">' + (p.unitLabel ? esc(p.unitLabel) + '<small> 萬/坪' + (p.unitEst ? '(估)' : '') + '</small>' : '—') + '</span></div>' +
-        '<div class="cmeta"><span class="tag tag-zone">' + esc(p.zone) + '</span>' +
+        '<div class="cmeta"><span class="tag tag-b b-' + p.builder + '">' + esc(BN[p.builder]) + '</span><span class="tag tag-zone">' + esc(p.zone) + '</span>' +
         '<span class="tag">室內 ' + esc(p.innerRange) + '</span>' +
         (t ? '<span class="tag">最新 ' + esc(t.date.slice(0, 7)) + ' ' + wan(t.total) + '</span>' : '<span class="tag tag-est">尚無實登</span>') +
         (ls.length ? '<span class="tag tag-sale">售' + ls.length + '</span>' : '') +
@@ -211,7 +216,7 @@
     }).join('');
   }
   function renderListings() {
-    var s = $('lsort').value, a = L.slice();
+    var s = $('lsort').value, a = L.filter(function (l) { return bOk(l.builder); });
     if ($('f-fit').checked) a = a.filter(function (l) { return l.fit; });
     var inn = function (l) { return l.inner != null ? l.inner : (l.main || 0); };
     if (s === 'price-asc') a.sort(function (x, y) { return x.total - y.total; });
@@ -223,13 +228,13 @@
     box.innerHTML = a.map(function (l) {
       var p = byId[l.pid], ppi = l.inner != null ? fmt(l.total / l.inner, 1) + '萬' : '—';
       return '<div class="lcard' + (l.fit ? ' fit' : '') + '">' +
-        '<div class="lcard-top"><span class="lname" data-pid="' + p.id + '">' + esc(p.name) + ' ' + esc(l.floor) + '</span>' +
+        '<div class="lcard-top"><span class="lname" data-pid="' + p.id + '"><i class="bmini b-' + p.builder + '">' + BCH[p.builder] + '</i>' + esc(p.name) + ' ' + esc(l.floor) + '</span>' +
         '<a class="lprice ' + (l.total <= 4000 ? 'u4000' : 'o4000') + '" href="' + esc(l.url) + '" target="_blank" rel="noopener">' + wan(l.total) + '</a></div>' +
         '<div class="lgrid"><div><span>權狀(含車位)</span><b>' + fmt(l.own) + '坪</b></div>' +
         '<div><span>室內(主+附)</span><b>' + (l.inner != null ? fmt(l.inner) + '坪' : '未知') + '</b></div>' +
         '<div><span>每室內坪</span><b>' + ppi + '</b></div></div>' +
         '<div class="lnote">' + esc(p.year ? p.year + ' 完工' : '') + ' · ' + esc(String(l.rooms).match(/^\d+$/) ? l.rooms + '房' : l.rooms) + ' · 車位 ' + esc(l.park) + ' · ' + esc(l.src) +
-        (l.innerNote ? '<br>' + esc(l.innerNote) : (l.innerSrc ? '<br>室內坪：' + esc(l.innerSrc) : '')) + '</div></div>';
+        (l.priceHist ? '<br>曾見價格：' + esc(l.priceHist) : '') + (l.innerNote ? '<br>' + esc(l.innerNote) : (l.innerSrc ? '<br>室內坪：' + esc(l.innerSrc) : '')) + '</div></div>';
     }).join('');
   }
 
@@ -249,6 +254,23 @@
       if (mobile()) setSheet('expanded');
       render();
     });
+  });
+
+  function fitVisible() {
+    var vis = P.filter(passes); if (!vis.length) return;
+    var b = window.L.latLngBounds(vis.map(function (p) { return [p.lat, p.lng]; }));
+    map.fitBounds(b, mobile() ? { paddingTopLeft: [36, 36], paddingBottomRight: [36, Math.round(window.innerHeight * 0.34) + 4], maxZoom: 16 } : { paddingTopLeft: [30, 40], paddingBottomRight: [30, 30], maxZoom: 16 });
+  }
+  document.querySelectorAll('.btab').forEach(function (t) {
+    t.addEventListener('click', function () {
+      bsel = t.dataset.b; map.closePopup(); activeId = null;
+      document.querySelectorAll('.btab').forEach(function (x) { var on = x === t; x.classList.toggle('active', on); x.setAttribute('aria-selected', on ? 'true' : 'false'); });
+      render(); fitVisible();
+    });
+  });
+  document.querySelectorAll('.btab').forEach(function (t) {
+    var b = t.dataset.b, n = P.filter(function (p) { return b === 'all' || p.builder === b; }).length;
+    t.querySelector('small').textContent = n;
   });
 
   // ---------- bottom sheet (mobile) ----------
@@ -283,10 +305,11 @@
 
   // ---------- footer ----------
   $('foot').innerHTML =
-    '<p><b>資料來源：</b><a href="https://www.kuensun.com.tw/works" target="_blank" rel="noopener">坤山建設官網業績</a>；' + esc(D.meta.lvr) + '；591（售屋與社區頁）；信義房屋。樂居這次被 Cloudflare 擋住，在售物件未納入樂居、永慶的獨家委託。查詢日 ' + esc(D.meta.generated) + '。</p>' +
+    '<p><b>資料來源：</b>建商官網業績（<a href="https://www.kuensun.com.tw/works" target="_blank" rel="noopener">坤山</a>、<a href="https://www.dexinhouse.com.tw/classic/all/" target="_blank" rel="noopener">德鑫</a>、<a href="https://www.grandconstruction.com.tw/program.php" target="_blank" rel="noopener">椰林</a>）；JR 預售屋資訊站椰林各區整理；' + esc(D.meta.lvr) + '；591（社區頁與售屋）；信義社區頁（坤山在售、建商核對）。樂居被 Cloudflare 擋住，德鑫／椰林的在售只收 591，信義、永慶獨家委託可能漏列。查詢日 ' + esc(D.meta.generated) + '。</p>' +
     '<p><b>單價：</b>' + esc(D.meta.formula) + '</p>' +
     '<p><b>室內坪：</b>' + esc(D.meta.innerDef) + '</p>' +
-    '<p><b>座標：</b>優先採 591／信義社區頁內嵌座標（坤山一景、坤德知之沿用前次地圖的樂居座標），並以 OpenStreetMap 反查確認全部位於竹北市。</p>' +
+    '<p><b>座標：</b>採 591／信義社區頁內嵌座標（少數無社區頁者用 591 門牌點），全部以 OpenStreetMap 反查確認位於竹北市。</p>' +
+    '<p><b>標記：</b>標籤左側字樣與外框顏色＝建商（坤＝棕、德＝紅方角、椰＝綠圓角）；底色＝完工年代；紅色「售N」＝在售戶數。</p>' +
     '<p class="warn">室內坪多為推估，看屋或出價前請以建物謄本核對主建物、附屬建物與車位坪數。</p>' +
     '<p>新竹縣總價 ≥ 4,000 萬屬高價住宅：貸款最多 3 成、無寬限期。</p>';
 

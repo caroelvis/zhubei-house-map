@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>坤山建設 · 竹北建案地圖</title>
-  <meta name="description" content="坤山建設在竹北市的 20 個住宅建案：完工年、權狀／室內坪、最近一筆實價登錄與目前在售物件。" />
+  <title>竹北建商建案地圖 · 坤山／德鑫／椰林</title>
+  <meta name="description" content="坤山、德鑫、椰林在竹北市的住宅建案：完工年、權狀／室內坪、最近一筆實價登錄與目前在售物件。" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
   <link rel="icon" href="data:," />
@@ -16,7 +16,7 @@
       <div class="brand">
         <span class="brand-mark" aria-hidden="true"></span>
         <div>
-          <h1>坤山建設 · 竹北建案地圖</h1>
+          <h1>竹北建商建案地圖 · 坤山／德鑫／椰林</h1>
           <p class="subtitle"><span id="count-pill">—</span><span class="hint-d"> · 點標籤看實價登錄與在售物件</span></p>
         </div>
       </div>
@@ -27,12 +27,19 @@
         <span class="legend-chip"><i class="dot pre"></i>預售</span>
         <span class="legend-chip"><i class="sale-chip">售2</i>在售戶數</span>
         <span class="legend-chip"><i class="star">★</i>坤德知之</span>
+        <span class="legend-chip"><i class="bmini b-ks">坤</i><i class="bmini b-dx">德</i><i class="bmini b-yl">椰</i>建商</span>
       </div>
+      <nav class="btabs" role="tablist" aria-label="切換建商">
+        <button type="button" role="tab" class="btab active" aria-selected="true" data-b="all">全部 <small></small></button>
+        <button type="button" role="tab" class="btab" aria-selected="false" data-b="ks"><i class="bmini b-ks">坤</i>坤山 <small></small></button>
+        <button type="button" role="tab" class="btab" aria-selected="false" data-b="dx"><i class="bmini b-dx">德</i>德鑫 <small></small></button>
+        <button type="button" role="tab" class="btab" aria-selected="false" data-b="yl"><i class="bmini b-yl">椰</i>椰林 <small></small></button>
+      </nav>
     </header>
 
     <div class="workspace">
       <section class="map-pane" aria-label="地圖">
-        <div id="map" role="application" aria-label="坤山建案地圖"></div>
+        <div id="map" role="application" aria-label="建商建案地圖"></div>
       </section>
 
       <aside class="side-pane" id="sheet">
